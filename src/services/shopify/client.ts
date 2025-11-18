@@ -1,56 +1,18 @@
-import z from "zod";
 import type { TypedDocumentString } from "@/gql/graphql";
-
-const shopifyErrorSchema = z.object({
-  message: z.string(),
-  extensions: z
-    .object({
-      code: z.string().optional(),
-    })
-    .optional(),
-  locations: z
-    .array(
-      z.object({
-        line: z.number(),
-        column: z.number(),
-      }),
-    )
-    .optional(),
-  path: z.array(z.union([z.string(), z.number()])).optional(),
-});
-
-const shopifyResponseSchema = <TResult>() =>
-  z.object({
-    data: z.custom<TResult | null>(
-      (val) => val === null || typeof val === "object",
-    ),
-    errors: z.array(shopifyErrorSchema).optional(),
-    extensions: z.object({
-      cost: z.object({
-        requestedQueryCost: z.number(),
-      }),
-    }),
-  });
+import { shopifyConfig } from "./config";
+import { shopifyResponseSchema } from "./schema";
 
 export default async function shopifyClient<TResult, TVariables>(
   query: TypedDocumentString<TResult, TVariables>,
   variables?: TVariables,
 ) {
   const response = await fetch(
-    `https://${z
-      .string()
-      .min(1, "SHOPIFY_SHOP_NAME is required")
-      .parse(
-        process.env.SHOPIFY_SHOP_NAME,
-      )}.myshopify.com/api/2025-10/graphql.json`,
+    `https://${shopifyConfig.shopName}.myshopify.com/api/2025-10/graphql.json`,
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Shopify-Storefront-Private-Token": z
-          .string()
-          .min(1, "SHOPIFY_ACCESS_TOKEN is required")
-          .parse(process.env.SHOPIFY_ACCESS_TOKEN),
+        "Shopify-Storefront-Private-Token": shopifyConfig.accessToken,
       },
       body: JSON.stringify({
         query: query.toString(),
