@@ -60,15 +60,12 @@ export default async function shopifyClient<TResult, TVariables>(
   );
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
+    const errorData = await response.json();
     console.error("Shopify API error:", errorData);
     throw new Error(`Failed to fetch Shopify API: ${response.statusText}`);
   }
 
   const json = await response.json();
-
-  console.log("json", json);
-
   const validation = shopifyResponseSchema<TResult>().safeParse(json);
 
   if (!validation.success) {
