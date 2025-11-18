@@ -7,15 +7,22 @@
     "build": "next build",
     "start": "next start",
     "lint": "biome check",
-    "format": "biome format --write"
+    "format": "biome format --write",
+    "codegen": "dotenvx run -- graphql-codegen",
+    "codegen:local": "dotenvx run --env-file .env.local -- graphql-codegen"
   },
   "dependencies": {
+    "@dotenvx/dotenvx": "^1.51.1",
+    "graphql": "^16.12.0",
     "next": "16.0.3",
     "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "react-dom": "19.2.0",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.0",
+    "@graphql-codegen/cli": "^6.0.2",
+    "@graphql-codegen/schema-ast": "^5.0.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
