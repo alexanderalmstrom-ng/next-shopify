@@ -1,26 +1,32 @@
 import z from "zod";
 import type { TypedDocumentString } from "@/gql/graphql";
 
-type ShopifyClientErrorLocation = {
-  line: number;
-  column: number;
-};
+const shopifyClientSchema = <TResult>(TResult: z.ZodType<TResult>) =>
+  z.object({
+    data: TResult.nullable(),
+    errors: z.array(
+      z.object({
+        message: z.string(),
+        extensions: z.object({
+          code: z.string(),
+        }),
+        locations: z.array(
+          z.object({
+            line: z.number(),
+            column: z.number(),
+          }),
+        ),
+        path: z.array(z.string()),
+      }),
+    ),
+    extensions: z.object({
+      code: z.string(),
+    }),
+  });
 
-type ShopifyClientErrorExtension = {
-  code: string;
-};
-
-type ShopifyClientError = {
-  message: string;
-  extensions?: ShopifyClientErrorExtension;
-  locations?: ShopifyClientErrorLocation[];
-  path?: string[];
-};
-
-type ShopifyClientResponse<TResult> = {
-  data: TResult | null;
-  errors?: ShopifyClientError[];
-};
+export type ShopifyClientResponse<TResult> = z.infer<
+  ReturnType<typeof shopifyClientSchema<TResult>>
+>;
 
 export default async function shopifyClient<TResult, TVariables>(
   query: TypedDocumentString<TResult, TVariables>,
@@ -54,5 +60,15 @@ export default async function shopifyClient<TResult, TVariables>(
     throw new Error(`Failed to fetch Shopify API: ${response.statusText}`);
   }
 
-  return (await response.json()) as ShopifyClientResponse<TResult>;
+  const json = await response.json();
+  const validation = shopifyClientSchema<TResult>(json).safeParse(json);
+
+  if (!validation.success) {
+    console.error(validation.error);
+    throw new Error(
+      `Failed to validate Shopify API response: ${validation.error.message}`,
+    );
+  }
+
+  return validation.data;
 }
