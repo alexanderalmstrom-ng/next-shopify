@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { getFragmentData, graphql } from "@/gql";
+import type { ProductBySlugQuery } from "@/gql/graphql";
 import shopifyClient from "@/services/shopify/client";
 
 const mediaImageFragment = graphql(`
@@ -33,12 +34,7 @@ const productBySlugQuery = graphql(`
 export default async function ProductPage(props: PageProps<"/product/[slug]">) {
   const { slug } = await props.params;
   const product = await getProductBySlug(slug);
-
-  const images = product?.media?.nodes.map((node) =>
-    node.__typename === "MediaImage"
-      ? getFragmentData(mediaImageFragment, node)
-      : undefined,
-  );
+  const images = resolveProductImages(product);
 
   return (
     <main>
@@ -63,4 +59,12 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
 
 async function getProductBySlug(slug: string) {
   return (await shopifyClient(productBySlugQuery, { slug })).data?.product;
+}
+
+function resolveProductImages(product: ProductBySlugQuery["product"]) {
+  return product?.media?.nodes.map((node) =>
+    node.__typename === "MediaImage"
+      ? getFragmentData(mediaImageFragment, node)
+      : undefined,
+  );
 }
