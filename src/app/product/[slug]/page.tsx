@@ -1,17 +1,29 @@
-import { graphql } from "@/gql";
+import Image from "next/image";
+import { getFragmentData, graphql } from "@/gql";
 import shopifyClient from "@/services/shopify/client";
 
-const getProductBySlugQuery = graphql(`
+const mediaImageFragment = graphql(`
+  fragment mediaImage on MediaImage {
+    __typename
+    id
+    image {
+      url
+      altText
+      width
+      height
+    }
+  }
+`);
+
+const productBySlugQuery = graphql(`
   query ProductBySlug($slug: String!) {
     product(handle: $slug) {
       id
       title
       description
-      images(first: 1) {
-        edges {
-          node {
-            url
-          }
+      media(first: 1) {
+        nodes {
+          ...mediaImage
         }
       }
     }
@@ -22,9 +34,33 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
   const { slug } = await props.params;
   const product = await getProductBySlug(slug);
 
-  return <div>{product?.title}</div>;
+  const images = product?.media?.nodes.map((node) =>
+    node.__typename === "MediaImage"
+      ? getFragmentData(mediaImageFragment, node)
+      : undefined,
+  );
+
+  return (
+    <main>
+      <h1>{product?.title}</h1>
+      {product?.description && <p>{product?.description}</p>}
+      {images?.map(
+        (image) =>
+          image?.image?.url && (
+            <Image
+              key={image.id}
+              src={image.image.url}
+              alt={image.image.altText ?? ""}
+              width={image.image.width ?? 2000}
+              height={image.image.height ?? 2000}
+              className="w-full h-full object-fit mix-blend-multiply"
+            />
+          ),
+      )}
+    </main>
+  );
 }
 
 async function getProductBySlug(slug: string) {
-  return (await shopifyClient(getProductBySlugQuery, { slug })).data?.product;
+  return (await shopifyClient(productBySlugQuery, { slug })).data?.product;
 }
