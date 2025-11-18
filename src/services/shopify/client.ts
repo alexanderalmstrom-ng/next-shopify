@@ -1,36 +1,40 @@
 import z from "zod";
 import type { TypedDocumentString } from "@/gql/graphql";
 
-const shopifyClientSchema = <TResult>(TResult: z.ZodType<TResult>) =>
-  z.object({
-    data: TResult.nullable(),
-    errors: z.array(
+const shopifyErrorSchema = z.object({
+  message: z.string(),
+  extensions: z
+    .object({
+      code: z.string().optional(),
+    })
+    .optional(),
+  locations: z
+    .array(
       z.object({
-        message: z.string(),
-        extensions: z.object({
-          code: z.string(),
-        }),
-        locations: z.array(
-          z.object({
-            line: z.number(),
-            column: z.number(),
-          }),
-        ),
-        path: z.array(z.string()),
+        line: z.number(),
+        column: z.number(),
       }),
+    )
+    .optional(),
+  path: z.array(z.union([z.string(), z.number()])).optional(),
+});
+
+const shopifyResponseSchema = <TResult>() =>
+  z.object({
+    data: z.custom<TResult | null>(
+      (val) => val === null || typeof val === "object",
     ),
+    errors: z.array(shopifyErrorSchema).optional(),
     extensions: z.object({
-      code: z.string(),
+      cost: z.object({
+        requestedQueryCost: z.number(),
+      }),
     }),
   });
 
-export type ShopifyClientResponse<TResult> = z.infer<
-  ReturnType<typeof shopifyClientSchema<TResult>>
->;
-
 export default async function shopifyClient<TResult, TVariables>(
   query: TypedDocumentString<TResult, TVariables>,
-  variables?: Record<string, unknown>,
+  variables?: TVariables,
 ) {
   const response = await fetch(
     `https://${z
@@ -50,25 +54,43 @@ export default async function shopifyClient<TResult, TVariables>(
       },
       body: JSON.stringify({
         query: query.toString(),
-        variables: variables ? JSON.stringify(variables) : undefined,
+        variables: variables || undefined,
       }),
     },
   );
 
   if (!response.ok) {
-    console.error(await response.json());
+    const errorData = await response.json().catch(() => ({}));
+    console.error("Shopify API error:", errorData);
     throw new Error(`Failed to fetch Shopify API: ${response.statusText}`);
   }
 
   const json = await response.json();
-  const validation = shopifyClientSchema<TResult>(json).safeParse(json);
+
+  console.log("json", json);
+
+  const validation = shopifyResponseSchema<TResult>().safeParse(json);
 
   if (!validation.success) {
-    console.error(validation.error);
+    console.error("Validation error:", validation.error);
     throw new Error(
       `Failed to validate Shopify API response: ${validation.error.message}`,
     );
   }
 
-  return validation.data;
+  const validatedData = validation.data;
+
+  // Throw if there are GraphQL errors
+  if (validatedData.errors && validatedData.errors.length > 0) {
+    const errorMessages = validatedData.errors
+      .map((error) => error.message)
+      .join(", ");
+    throw new Error(`Shopify GraphQL errors: ${errorMessages}`);
+  }
+
+  return {
+    data: validatedData.data,
+    errors: validatedData.errors,
+    extensions: validatedData.extensions,
+  };
 }
