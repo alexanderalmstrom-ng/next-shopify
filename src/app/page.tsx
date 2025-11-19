@@ -1,9 +1,9 @@
 import { Suspense } from "react";
 import ProductList from "@/components/ProductList";
-import { api, HydrateClient } from "@/trpc/server";
+import { HydrateClient, prefetch, trpc } from "@/trpc/server";
 
 export default async function Home() {
-  void api.shopify.products.prefetch();
+  prefetch(trpc.shopify.products.queryOptions());
 
   return (
     <div className="flex min-h-screen items-center justify-center font-sans">

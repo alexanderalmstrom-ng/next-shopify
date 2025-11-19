@@ -1,4 +1,4 @@
-import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, publicProcedure } from "@/trpc/init";
 import { getProducts } from "@/utils/product";
 
 export const shopifyRouter = createTRPCRouter({

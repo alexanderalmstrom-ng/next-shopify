@@ -1,4 +1,4 @@
-import { TRPCReactProvider } from "@/trpc/react";
+import { TRPCReactProvider } from "@/trpc/client";
 import "./globals.css";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";

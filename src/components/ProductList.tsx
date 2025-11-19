@@ -2,7 +2,7 @@
 
 import { useSuspenseQuery } from "@tanstack/react-query";
 import type { ProductsQuery } from "@/gql/graphql";
-import { api } from "@/trpc/react";
+import { useTRPC } from "@/trpc/client";
 import ProductCard from "./ProductCard";
 
 type MediaNode =
@@ -15,9 +15,9 @@ function isMediaImage(
 }
 
 export default function ProductList() {
-  const utils = api.useUtils();
+  const trpc = useTRPC();
   const { data: products } = useSuspenseQuery(
-    utils.shopify.products.queryOptions(),
+    trpc.shopify.products.queryOptions(),
   );
 
   return (
