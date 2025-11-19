@@ -1,24 +1,9 @@
-"use client";
-
-import { useSuspenseQuery } from "@tanstack/react-query";
-import type { ProductsQuery } from "@/gql/graphql";
-import { useTRPC } from "@/trpc/client";
+import { caller } from "@/trpc/server";
 import ProductCard from "./ProductCard";
+import { isMediaImage } from "./utils/isMediaImage";
 
-type MediaNode =
-  ProductsQuery["products"]["edges"][number]["node"]["media"]["nodes"][number];
-
-function isMediaImage(
-  node: MediaNode,
-): node is Extract<MediaNode, { __typename?: "MediaImage" }> {
-  return node.__typename === "MediaImage";
-}
-
-export default function ProductList() {
-  const trpc = useTRPC();
-  const { data: products } = useSuspenseQuery(
-    trpc.shopify.products.queryOptions(),
-  );
+export default async function ProductListServer() {
+  const products = await caller.shopify.products();
 
   if (products.length === 0) {
     return <div className="text-2xl">No products found</div>;

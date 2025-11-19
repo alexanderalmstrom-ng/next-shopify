@@ -1,19 +1,23 @@
 import { Suspense } from "react";
-import ProductList from "@/components/ProductList";
-import { HydrateClient, prefetch, trpc } from "@/trpc/server";
+// import ProductListClient from "@/components/ProductListClient";
+import ProductListServer from "@/components/ProductListServer";
+// import { HydrateClient } from "@/trpc/server";
 
-export const dynamic = "force-dynamic";
+// export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  prefetch(trpc.shopify.products.queryOptions());
+  // prefetch(trpc.shopify.products.queryOptions());
 
   return (
-    <div className="flex min-h-screen items-center justify-center font-sans">
-      <HydrateClient>
+    <main>
+      {/* <HydrateClient>
         <Suspense fallback={<div>Loading...</div>}>
-          <ProductList />
+          <ProductListClient />
         </Suspense>
-      </HydrateClient>
-    </div>
+      </HydrateClient> */}
+      <Suspense fallback={<div>Loading...</div>}>
+        <ProductListServer />
+      </Suspense>
+    </main>
   );
 }
