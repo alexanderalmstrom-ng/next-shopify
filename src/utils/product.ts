@@ -13,7 +13,7 @@ export function isMediaImage(
 
 export async function getProducts() {
   const { data } = await shopifyClient(productsQuery);
-  return data?.products?.edges?.map((edge) => edge.node);
+  return data?.products?.edges?.map((edge) => edge.node) ?? [];
 }
 
 export const productsQuery = graphql(`
