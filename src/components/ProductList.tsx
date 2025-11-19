@@ -20,6 +20,10 @@ export default function ProductList() {
     trpc.shopify.products.queryOptions(),
   );
 
+  if (products.length === 0) {
+    return <div className="text-2xl">No products found</div>;
+  }
+
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-px">
       {products.map((product) => {
