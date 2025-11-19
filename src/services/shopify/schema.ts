@@ -30,3 +30,9 @@ export const shopifyResponseSchema = <TResult>() =>
       }),
     }),
   });
+
+export type ShopifyResponse<TResult> = z.infer<
+  ReturnType<typeof shopifyResponseSchema<TResult>>
+>;
+
+export type ShopifyError = z.infer<typeof shopifyErrorSchema>;
