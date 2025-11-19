@@ -18,16 +18,18 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
       {images?.map(
         (image) =>
           image?.image?.url && (
-            <Image
-              key={image.id}
-              src={image.image.url}
-              alt={image.image.altText ?? ""}
-              width={image.image.width ?? 2000}
-              height={image.image.height ?? 2000}
-              className="w-full h-full object-fit mix-blend-multiply"
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              priority
-            />
+            <picture className="flex bg-amber-50">
+              <Image
+                key={image.id}
+                src={image.image.url}
+                alt={image.image.altText ?? ""}
+                width={image.image.width ?? 2000}
+                height={image.image.height ?? 2000}
+                className="w-full h-full object-fit mix-blend-multiply"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                priority
+              />
+            </picture>
           ),
       )}
       <div className="flex flex-col gap-4">
