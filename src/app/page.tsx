@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import ProductList from "@/components/ProductList";
 import { HydrateClient, prefetch, trpc } from "@/trpc/server";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   prefetch(trpc.shopify.products.queryOptions());
 
