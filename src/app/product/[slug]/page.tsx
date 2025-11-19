@@ -14,7 +14,7 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
   }
 
   return (
-    <main className="grid lg:grid-cols-2 gap-4">
+    <div className="grid lg:grid-cols-2 gap-4">
       {images?.map(
         (image) =>
           image?.image?.url && (
@@ -36,7 +36,7 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
         <h1 className="text-2xl">{product.title}</h1>
         {product.description && <p>{product.description}</p>}
       </div>
-    </main>
+    </div>
   );
 }
 

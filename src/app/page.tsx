@@ -9,7 +9,7 @@ export default async function Home() {
   // prefetch(trpc.shopify.products.queryOptions());
 
   return (
-    <main>
+    <div>
       {/* <HydrateClient>
         <Suspense fallback={<div>Loading...</div>}>
           <ProductListClient />
@@ -18,6 +18,6 @@ export default async function Home() {
       <Suspense fallback={<div>Loading...</div>}>
         <ProductListServer />
       </Suspense>
-    </main>
+    </div>
   );
 }
